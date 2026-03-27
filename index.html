@@ -12,12 +12,9 @@ canvas { display:block; }
   padding-left:18px;
   margin-top:4px;
 }
-#ref-list li {
-  font-size:12px;
-  color:#3a5060;
-  line-height:1.6;
-  margin-bottom:10px;
-}
+#ref-list li { font-size:12px; color:#3a5060; line-height:1.6; margin-bottom:10px; font-family:system-ui,sans-serif; }
+#panel p { font-size:13px; color:#3a5060; line-height:1.65; margin-bottom:10px; font-family:system-ui,sans-serif; }
+
 #ref-list li a {
   font-size:12px;
   word-break:break-all;
@@ -102,9 +99,9 @@ canvas { display:block; }
 }
 #close-btn:hover { color:#152030; }
 
-#panel h2 { font-size:14px; font-weight:600; color:#152030; margin-bottom:14px; letter-spacing:0.01em; }
+#panel h2 { font-size:14px; font-weight:600; color:#152030; margin-bottom:14px; letter-spacing:0.01em; font-family:system-ui,sans-serif; }
 #panel p { font-size:13px; color:#3a5060; line-height:1.65; margin-bottom:10px; }
-#panel a { color:#1a5bcc; font-size:13px; text-decoration:none; }
+#panel a { color:#1a5bcc; font-size:13px; text-decoration:none; font-family:system-ui,sans-serif; }
 #panel a:hover { text-decoration:underline; }
 
 .pane { display:none; }
@@ -126,9 +123,33 @@ canvas { display:block; }
   transition:box-shadow 0.15s;
 }
 #icon-grid a:hover { box-shadow:0 4px 14px rgba(30,62,152,0.12); }
-#icon-grid iframe { width:100%; height:110px; border:none; pointer-events:none; display:block; }
-#icon-grid span { display:block; font-size:10px; color:#607080; padding:6px 8px; border-top:1px solid #f0f4f8; }
+#icon-grid iframe {
+  width: 100%;           
+  height: 110px;          
+  border: none;
+  pointer-events: none;
+  display: block;
+  transform: scale(0.75);   
+  transform-origin: center; 
+  margin-bottom: -10px;    
+  margin-top: 17px;       
+}
 
+#icon-grid a {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; 
+  overflow: hidden; 
+}
+#icon-grid span { 
+  display: block; 
+  font-size: 10px; 
+  color: #607080; 
+  padding: 4px 6px; 
+  border-top: 1px solid #f0f4f8; 
+  font-family: system-ui, sans-serif; 
+  text-align: center; 
+}
 #pane-code a.repo-link {
   display:inline-block;
   margin-top:12px;
