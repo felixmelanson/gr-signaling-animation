@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GR Signaling Animation</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#fff; width:100vw; height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; }
+canvas { display:block; }
+
+#ref-list {
+  padding-left:18px;
+  margin-top:4px;
+}
+#ref-list li {
+  font-size:12px;
+  color:#3a5060;
+  line-height:1.6;
+  margin-bottom:10px;
+}
+#ref-list li a {
+  font-size:12px;
+  word-break:break-all;
+}
+
+#tabs {
+  position:absolute;
+  top:16px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:2px;
+  z-index:10;
+  background:rgba(255,255,255,0.55);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(30,62,152,0.13);
+  border-radius:24px;
+  padding:4px;
+}
+#tabs button {
+  background:transparent;
+  border:none;
+  border-radius:20px;
+  padding:6px 18px;
+  font:12px system-ui,sans-serif;
+  color:#1e3e98;
+  cursor:pointer;
+  transition:background 0.15s;
+  white-space:nowrap;
+}
+#tabs button:hover { background:rgba(30,62,152,0.08); }
+
+#byline {
+  position:absolute;
+  bottom:15px;
+  left:8%;
+  transform:translateX(-50%);
+  font:13px system-ui,sans-serif;
+  color:#222323;
+  opacity:0.65;
+  letter-spacing:0.02em;
+  white-space:nowrap;
+  z-index:10;
+}
+
+#overlay {
+  display:none;
+  position:absolute;
+  inset:0;
+  background:rgba(20,30,60,0.28);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  z-index:20;
+  align-items:center;
+  justify-content:center;
+}
+#overlay.open { display:flex; }
+
+#panel {
+  background:rgba(255,255,255,0.86);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.7);
+  border-radius:18px;
+  padding:32px;
+  width:580px;
+  max-height:72vh;
+  overflow-y:auto;
+  position:relative;
+  box-shadow:0 24px 64px rgba(20,30,80,0.16);
+}
+#close-btn {
+  position:absolute;
+  top:14px; right:16px;
+  background:none;
+  border:none;
+  font-size:16px;
+  color:#8090a0;
+  cursor:pointer;
+  line-height:1;
+}
+#close-btn:hover { color:#152030; }
+
+#panel h2 { font-size:14px; font-weight:600; color:#152030; margin-bottom:14px; letter-spacing:0.01em; }
+#panel p { font-size:13px; color:#3a5060; line-height:1.65; margin-bottom:10px; }
+#panel a { color:#1a5bcc; font-size:13px; text-decoration:none; }
+#panel a:hover { text-decoration:underline; }
+
+.pane { display:none; }
+.pane.active { display:block; }
+
+#icon-grid {
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:10px;
+  margin-top:4px;
+}
+#icon-grid a {
+  display:block;
+  background:rgba(255,255,255,0.9);
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  overflow:hidden;
+  text-decoration:none;
+  transition:box-shadow 0.15s;
+}
+#icon-grid a:hover { box-shadow:0 4px 14px rgba(30,62,152,0.12); }
+#icon-grid iframe { width:100%; height:110px; border:none; pointer-events:none; display:block; }
+#icon-grid span { display:block; font-size:10px; color:#607080; padding:6px 8px; border-top:1px solid #f0f4f8; }
+
+#pane-code a.repo-link {
+  display:inline-block;
+  margin-top:12px;
+  background:#1a5bcc;
+  color:#fff !important;
+  border-radius:8px;
+  padding:8px 16px;
+  font-size:12px;
+  text-decoration:none !important;
+}
+#pane-code a.repo-link:hover { background:#1448a8; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+
+<nav id="tabs">
+  <button onclick="openPanel('about')">About</button>
+  <button onclick="openPanel('icons')">Get Icons</button>
+  <button onclick="openPanel('code')">Get Code</button>
+  <button onclick="openPanel('refs')">References</button>
+</nav>
+
+<div id="byline">Animation by Felix Melanson</div>
+
+<div id="overlay" onclick="closePanel()">
+  <div id="panel" onclick="event.stopPropagation()">
+    <button id="close-btn" onclick="closePanel()">&#x2715;</button>
+
+    <div id="pane-about" class="pane">
+      <h2>GR Signaling Animation</h2>
+      <p>An interactive HTML canvas animation of glucocorticoid receptor (GR) signaling, built for a PHAR 370 presentation at Queen's University.</p>
+      <p>Cytoplasmic activation: resting chaperone complex → prednisolone binding → FKBP51/52 switch → dynein-dynactin recruitment → retrograde microtubule transport → nuclear pore entry → HSP90 dissociation</p>
+      <p>Genomic signaling: homodimerization → transactivation (GRE binding, DUSP1 induction) → transrepression (NF-κB/AP-1 tethering)</p>
+      <p>Additional Note (GRdim hypothesis): An experiment using a KO mouse model engineered to abolish GR dimerization; the goal was to test whether transrepression could be isolated from transactivation, retaining anti-inflammatory efficacy while eliminating metabolic side effects. The experiment failed: without dimerization, DUSP1 induction is lost and the anti-inflammatory effect collapses entirely, demonstrating that the two pathways are functionally inseparable. This has direct clinical implications because transactivation cannot be eliminated without losing therapeutic efficacy, glucocorticoid-driven gene expression in metabolic tissues is unavoidable. Adverse effects therefore concentrate in tissues with the highest GR expression: liver, skeletal muscle, adipose tissue, and pancreas.</p>
+      <p style="margin-top:16px"><a href="https://github.com/felixmelanson" target="_blank">github.com/felixmelanson &rarr;</a></p>
+    </div>
+
+    <div id="pane-icons" class="pane">
+      <h2>Custom Icons: click to view individual</h2>
+      <div id="icon-grid">
+        <a href="assets/legend/gr.html" target="_blank"><iframe src="assets/legend/gr.html"></iframe><span>Glucocorticoid Receptor</span></a>
+        <a href="assets/legend/hsp90.html" target="_blank"><iframe src="assets/legend/hsp90.html"></iframe><span>HSP90</span></a>
+        <a href="assets/legend/fkbp51.html" target="_blank"><iframe src="assets/legend/fkbp51.html"></iframe><span>FKBP51</span></a>
+        <a href="assets/legend/fkbp52.html" target="_blank"><iframe src="assets/legend/fkbp52.html"></iframe><span>FKBP52</span></a>
+        <a href="assets/legend/dynein.html" target="_blank"><iframe src="assets/legend/dynein.html"></iframe><span>Dynein/Dynactin</span></a>
+        <a href="assets/legend/importin.html" target="_blank"><iframe src="assets/legend/importin.html"></iframe><span>Importin &alpha;/&beta;</span></a>
+        <a href="assets/legend/prednisolone.html" target="_blank"><iframe src="assets/legend/prednisolone.html"></iframe><span>Prednisolone</span></a>
+        <a href="assets/legend/microtubule.html" target="_blank"><iframe src="assets/legend/microtubule.html"></iframe><span>&alpha;/&beta;-Tubulin</span></a>
+        <a href="assets/legend/nfkb.html" target="_blank"><iframe src="assets/legend/nfkb.html"></iframe><span>NF-&kappa;B</span></a>
+        <a href="assets/legend/ap1.html" target="_blank"><iframe src="assets/legend/ap1.html"></iframe><span>AP-1</span></a>
+      </div>
+    </div>
+
+<div id="pane-code" class="pane">
+      <h2>Get Code</h2>
+      <p>Full source is on GitHub. The animation is a single self-contained HTML file using the Canvas 2D API no build step or dependencies.</p>
+      <a class="repo-link" href="https://github.com/felixmelanson/gr-signaling-animation" target="_blank">View Repository &rarr;</a>
+    </div>
+
+    <div id="pane-refs" class="pane">
+
+  <h2>References</h2>
+  <ol id="ref-list">
+    <li>Luisi, B. F., et al. (1991). Crystallographic analysis of the interaction of the glucocorticoid receptor with DNA. <em>Nature, 352</em>(6335), 497–505. <a href="https://doi.org/10.1038/352497a0" target="_blank">https://doi.org/10.1038/352497a0</a></li>
+    <li>Cato, A. C. B., & Wade, E. (1996). Molecular mechanisms of anti-inflammatory action of glucocorticoids. <em>BioEssays, 18</em>(5), 371–378. <a href="https://doi.org/10.1002/bies.950180507" target="_blank">https://doi.org/10.1002/bies.950180507</a></li>
+    <li>Pratt, W. B., & Toft, D. O. (1997). Steroid receptor interactions with heat shock protein and immunophilin chaperones. <em>Endocrine Reviews, 18</em>(3), 306–360. <a href="https://doi.org/10.1210/edrv.18.3.0303" target="_blank">https://doi.org/10.1210/edrv.18.3.0303</a></li>
+    <li>Bledsoe, R. K., et al. (2002). Crystal structure of the glucocorticoid receptor ligand binding domain reveals a novel mode of receptor dimerization and coactivator recognition. <em>Cell, 110</em>(1), 93–105. <a href="https://doi.org/10.1016/S0092-8674(02)00817-6" target="_blank">https://doi.org/10.1016/S0092-8674(02)00817-6</a></li>
+    <li>Davies, T. H., Ning, Y. M., & Sánchez, E. R. (2002). A new first step in activation of steroid receptors: hormone-induced switching of FKBP51 and FKBP52 immunophilins. <em>Journal of Biological Chemistry, 277</em>(7), 4597–4600. <a href="https://doi.org/10.1074/jbc.C100531200" target="_blank">https://doi.org/10.1074/jbc.C100531200</a></li>
+    <li>Freedman, N. D., & Yamamoto, K. R. (2004). Importin 7 and importin α/importin β are nuclear import receptors for the glucocorticoid receptor. <em>Molecular Biology of the Cell, 15</em>(5), 2276–2286. <a href="https://doi.org/10.1091/mbc.e03-11-0839" target="_blank">https://doi.org/10.1091/mbc.e03-11-0839</a></li>
+    <li>Wochnik, G. M., et al. (2005). FK506-binding proteins 51 and 52 differentially regulate dynein interaction and nuclear translocation of the glucocorticoid receptor in mammalian cells. <em>Journal of Biological Chemistry, 280</em>(6), 4609–4616. <a href="https://doi.org/10.1074/jbc.M407498200" target="_blank">https://doi.org/10.1074/jbc.M407498200</a></li>
+    <li>Echeverria, P. C., & Picard, D. (2009). Molecular chaperones, essential partners of steroid hormone receptors for activity and mobility. <em>Biochimica et Biophysica Acta, 1803</em>(6), 641–649. <a href="https://doi.org/10.1016/j.bbamcr.2009.11.012" target="_blank">https://doi.org/10.1016/j.bbamcr.2009.11.012</a></li>
+    <li>Galigniana, M. D., et al. (2010). The hsp90-FKBP52 complex links the mineralocorticoid receptor to motor proteins and persists bound to the receptor in early nuclear events. <em>Molecular and Cellular Biology, 30</em>(5), 1285–1298. <a href="https://doi.org/10.1128/MCB.01190-09" target="_blank">https://doi.org/10.1128/MCB.01190-09</a></li>
+    <li>Joanny, E., et al. (2012). Anti-inflammatory effects of selective glucocorticoid receptor modulators are partially dependent on up-regulation of dual specificity phosphatase 1. <em>British Journal of Pharmacology, 165</em>(4), 1124–1136. <a href="https://doi.org/10.1111/j.1476-5381.2011.01574.x" target="_blank">https://doi.org/10.1111/j.1476-5381.2011.01574.x</a></li>
+    <li>Vandevyver, S., et al. (2012). Glucocorticoid receptor dimerization induces MKP1 to protect against TNF-induced inflammation. <em>Journal of Clinical Investigation, 122</em>(6), 2130–2140. <a href="https://doi.org/10.1172/JCI60006" target="_blank">https://doi.org/10.1172/JCI60006</a></li>
+    <li>Escoter-Torres, L., et al. (2020). Anti-inflammatory functions of the glucocorticoid receptor require DNA binding. <em>Nucleic Acids Research, 48</em>(15), 8393–8407. <a href="https://doi.org/10.1093/nar/gkaa565" target="_blank">https://doi.org/10.1093/nar/gkaa565</a></li>
+    <li>Noddings, C. M., et al. (2022). Structure of Hsp90-p23-GR reveals the Hsp90 client-remodelling mechanism. <em>Nature, 601</em>(7893), 465–469. <a href="https://doi.org/10.1038/s41586-021-04236-1" target="_blank">https://doi.org/10.1038/s41586-021-04236-1</a></li>
+</ol>
+</div>
+
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const W = 1280, H = 720, LOOP = 68, FPS = 60;
+
+function resize() {
+  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  cv.style.width = W * s + 'px';
+  cv.style.height = H * s + 'px';
+}
+resize();
+window.addEventListener('resize', resize);
+
+function openPanel(which) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-' + which).classList.add('active');
+  document.getElementById('overlay').classList.add('open');
+}
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// layout constants
+const NX = 1008, NY = 360, NRX = 180, NRY = 172;
+const CX0 = 248, CY0 = 360, PX = NX - NRX;
+const MICRO_Y = CY0 + 70, HEAD_Y = MICRO_Y - 15;
+const GRE_X = NX + 8, GRE_Y = NY + 56;
+const PROMO_X = NX - 70, PROMO_Y = NY + 50;
+const GENE_Y = NY - 44;
+const GPOS = [GRE_X - 66, GRE_X - 22, GRE_X + 22, GRE_X + 66];
+
+// stage timings [start, end] in secs
+const ST = {
+  intro:    [0,    4.0],
+  idle:     [4.0,  9.0],
+  ligand:   [9.0,  14.0],
+  fkbp:     [14.0, 23.0],
+  dynein:   [23.0, 28.5],
+  walk:     [28.5, 32.5],
+  entry:    [32.5, 35.0],
+  dissoc:   [35.0, 38.0],
+  hold:     [38.0, 42.0],
+  dimer:    [42.0, 47.0],
+  transact: [47.0, 54.0],
+  transrep: [54.0, 61.0],
+  grdim:    [61.0, 68.0]
+};
+
+const sp = (n, t) => { const [s, e] = ST[n]; return Math.max(0, Math.min(1, (t - s) / (e - s))); };
+const curS = t => { for (const k of Object.keys(ST).reverse()) if (t >= ST[k][0]) return k; return 'intro'; };
+
+// easings
+const eio = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+const eo  = t => 1 - (1 - t) ** 3;
+const lerp  = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// colors
+const C = {
+  gr: '#1a5bcc',   grL: '#6ea0f8',
+  hsp: '#b85808',  hspL: '#f0a840',
+  f51: '#b01818',  f51L: '#ee8080',
+  f52: '#0e7838',  f52L: '#4ece7e',
+  dyn: '#6814aa',  dynL: '#be82f0',
+  pred: '#b88000', predL: '#f5d84a',
+  imp: '#607080',  impL: '#a8bece',
+  nfkb: '#aa1010', nfkbL: '#f07070',
+  ap1: '#a85008',  ap1L: '#f0a050',
+  gene: '#156030',
+  amber: '#8a6000', amberL: '#c89800',
+  nucO: '#1e3e98', nucI: '#4868c8', nucF: '#edf2ff',
+  pore: '#1e3088', poreC: '#a8c0ff', poreI: '#dce8ff',
+  label: '#152030'
+};
+
+// camera position
+let camX = W/2, camY = H/2, camZ = 0.88;
+let tCX = W/2, tCY = H/2, tCZ = 0.88;
+
+function tickCam(t) {
+  const s = curS(t);
+  const idp = sp('idle', t), wp = sp('walk', t), ep = sp('entry', t);
+  const trP = sp('transrep', t), gdp = sp('grdim', t);
+
+  if (s === 'intro') {
+    tCX = W/2; tCY = H/2; tCZ = 0.88;
+  } else if (s === 'idle') {
+    const zi = eo(clamp(idp * 1.8, 0, 1));
+    tCX = lerp(W/2, CX0, zi); tCY = lerp(H/2, CY0, zi); tCZ = lerp(0.88, 2.2, zi);
+  } else if (s === 'ligand' || s === 'fkbp') {
+    tCX = CX0; tCY = CY0; tCZ = 2.1;
+  } else if (s === 'dynein') {
+    tCX = CX0; tCY = CY0 + 26; tCZ = 1.7;
+  } else if (s === 'walk') {
+    tCX = lerp(CX0, PX + 20, eio(wp));
+    tCY = lerp(CY0 + 26, NY, eio(wp) * 0.22);
+    tCZ = lerp(1.7, 1.0, eo(wp));
+  } else if (s === 'entry') {
+    tCX = lerp(PX + 20, NX, eo(ep)); tCY = NY; tCZ = lerp(1.0, 1.65, eo(ep));
+  } else if (s === 'dissoc' || s === 'hold') {
+    tCX = NX; tCY = NY; tCZ = 1.72;
+  } else if (s === 'dimer' || s === 'transact') {
+    tCX = NX + 10; tCY = NY + 14; tCZ = 2.62;
+  } else if (s === 'transrep') {
+    const zf = eo(clamp((trP - 0.26) / 0.22, 0, 1));
+    tCX = lerp(NX - 28, PROMO_X - 5, zf);
+    tCY = lerp(NY + 24, PROMO_Y + 12, zf);
+    tCZ = lerp(2.2, 2.85, zf);
+  } else if (s === 'grdim') {
+    const pull = eo(clamp(gdp / 0.32, 0, 1));
+    tCX = lerp(PROMO_X - 5, NX - 22, pull);
+    tCY = lerp(PROMO_Y + 12, NY + 16, pull);
+    tCZ = lerp(2.85, 1.52, pull);
+  }
+
+  camX = lerp(camX, tCX, 0.032);
+  camY = lerp(camY, tCY, 0.032);
+  camZ = lerp(camZ, tCZ, 0.032);
+}
+
+const pushCam = () => {
+  g.translate(W/2, H/2);
+  g.scale(camZ, camZ);
+  g.translate(-camX, -camY);
+};
+
+// sphere
+function sph(x, y, r, col, colL, op) {
+  if (op === undefined) op = 1;
+  if (op < 0.02) return;
+  g.save(); g.globalAlpha = op;
+  const gr = g.createRadialGradient(x - r*.32, y - r*.34, r*.02, x + r*.08, y + r*.08, r*1.04);
+  gr.addColorStop(0, colL); gr.addColorStop(1, col);
+  g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI*2); g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.18)';
+  g.beginPath(); g.arc(x - r*.26, y - r*.3, r*.38, 0, Math.PI*2); g.fill();
+  g.restore();
+}
+
+// hsp90 monomer arm side is -1 or 1
+function hsp90Monomer(cx, cy, r, side, ox, oy, op) {
+  if (op < 0.02) return;
+  const or = r + 15, ow = or * 1.26;
+  const j1x = cx+ox, j1y = cy - or*.85 + oy;
+  const j2x = cx+ox, j2y = cy + or*.85 + oy;
+  const c1x = cx + side*ow*.5 + ox, c1y = cy - or*.92 + oy;
+  const c2x = cx + side*ow*.88 + ox, c2y = cy - or*.38 + oy;
+  const mx  = cx + side*ow*.86 + ox, my = cy + oy;
+  const c3x = cx + side*ow*.88 + ox, c3y = cy + or*.38 + oy;
+  const c4x = cx + side*ow*.5  + ox, c4y = cy + or*.92 + oy;
+  g.save(); g.globalAlpha = op;
+  g.strokeStyle = C.hsp; g.lineWidth = 10; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(j1x, j1y);
+  g.bezierCurveTo(c1x, c1y, c2x, c2y, mx, my);
+  g.bezierCurveTo(c3x, c3y, c4x, c4y, j2x, j2y); g.stroke();
+  g.strokeStyle = C.hspL; g.lineWidth = 4;
+  const sv = 0.88;
+  g.beginPath(); g.moveTo(j1x, j1y);
+  g.bezierCurveTo(lerp(j1x,c1x,sv), lerp(j1y,c1y,sv), lerp(j2x,c2x,sv), lerp(j2y,c2y,sv), mx, my);
+  g.bezierCurveTo(lerp(j1x,c3x,sv), lerp(j1y,c3y,sv), lerp(j2x,c4x,sv), lerp(j2y,c4y,sv), j2x, j2y);
+  g.stroke();
+  sph(mx, my, 7, C.hsp, C.hspL, op);
+  g.restore();
+}
+
+function hsp90(cx, cy, r, op) {
+  if (op < 0.02) return;
+  const or = r + 15;
+  hsp90Monomer(cx, cy, r, -1, 0, 0, op);
+  hsp90Monomer(cx, cy, r,  1, 0, 0, op);
+  sph(cx, cy - or*.85, 9, C.hsp, C.hspL, op);
+  sph(cx, cy + or*.85, 9, C.hsp, C.hspL, op);
+}
+
+// splitting animation when hsp90 releases
+function hsp90Dissoc(cx, cy, r, prog) {
+  const d = eo(clamp(prog / .54, 0, 1));
+  const fa = Math.max(0, 1 - prog / .60);
+  if (fa < 0.02) return;
+  const or = r + 15;
+  hsp90Monomer(cx, cy, r, -1, -d*88, -d*8, fa);
+  hsp90Monomer(cx, cy, r,  1,  d*88,  d*8, fa);
+  sph(cx - d*44, cy - or*.85 - d*4, 9, C.hsp, C.hspL, fa*.55);
+  sph(cx + d*44, cy + or*.85 + d*4, 9, C.hsp, C.hspL, fa*.55);
+}
+
+function dyneinDraw(cargoX, cargoY, h1x, h1y, h2x, h2y, op) {
+  if (op < 0.02) return;
+  const ax = cargoX, ay = cargoY + 22;
+  g.save(); g.globalAlpha = op;
+  g.strokeStyle = C.dyn; g.lineWidth = 2.5; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(ax, ay); g.lineTo(h1x, h1y - 13); g.stroke();
+  g.beginPath(); g.moveTo(ax, ay); g.lineTo(h2x, h2y - 13); g.stroke();
+  for (const hd of [[h1x, h1y], [h2x, h2y]]) {
+    const hx = hd[0], hy = hd[1];
+    sph(hx, hy, 13, C.dyn, C.dynL);
+    g.strokeStyle = 'rgba(255,255,255,0.16)'; g.lineWidth = 1;
+    g.beginPath(); g.arc(hx, hy, 6.5, 0, Math.PI*2); g.stroke();
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI/3) * i;
+      g.fillStyle = 'rgba(255,255,255,0.15)';
+      g.beginPath(); g.arc(hx + 6*Math.cos(a), hy + 6*Math.sin(a), 1.8, 0, Math.PI*2); g.fill();
+    }
+    g.font = 'bold 7.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.88)';
+    g.textAlign = 'center'; g.fillText('D', hx, hy + 2.8); g.textAlign = 'left';
+  }
+  g.restore();
+}
+
+// tubulin dimer tiles this works dont touch it
+function micro(op) {
+  g.save(); g.globalAlpha = op;
+  for (const dy of [-14, 14]) {
+    let alt = true;
+    for (let x = 88; x < PX - 20; x += 20) {
+      const c1 = alt ? '#7898c8' : '#9ab8d0';
+      const c2 = alt ? '#3a5888' : '#5878a0';
+      const gr = g.createRadialGradient(x+10, MICRO_Y+dy-3, 1, x+10, MICRO_Y+dy, 9);
+      gr.addColorStop(0, c1); gr.addColorStop(1, c2);
+      g.fillStyle = gr; g.beginPath(); g.ellipse(x+10, MICRO_Y+dy, 10.5, 7, 0, 0, Math.PI*2); g.fill();
+      g.strokeStyle = 'rgba(255,255,255,0.22)'; g.lineWidth = 0.5;
+      g.beginPath(); g.ellipse(x+10, MICRO_Y+dy, 10.5, 7, 0, 0, Math.PI*2); g.stroke();
+      alt = !alt;
+    }
+  }
+  g.font = 'bold 12px system-ui,sans-serif'; g.fillStyle = 'rgba(40,72,120,0.58)';
+  g.fillText('\u03b1/\u03b2-tubulin microtubule', 92, MICRO_Y + 34);
+  g.restore();
+}
+
+function npc(px, py, isMain, glowA) {
+  if (glowA === undefined) glowA = 0;
+  const or = isMain ? 14 : 7.5;
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(px, py, or+4, 0, Math.PI*2); g.fill();
+  if (glowA > 0) { g.shadowBlur = 22 * glowA; g.shadowColor = '#4070e0'; }
+  g.fillStyle = C.pore; g.beginPath(); g.arc(px, py, or, 0, Math.PI*2); g.fill();
+  g.shadowBlur = 0;
+  g.fillStyle = C.poreI; g.beginPath(); g.arc(px, py, or*.52, 0, Math.PI*2); g.fill();
+  if (isMain) {
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI/4) * i;
+      g.fillStyle = C.nucI;
+      g.beginPath(); g.arc(px + or*.76*Math.cos(a), py + or*.76*Math.sin(a), or*.13, 0, Math.PI*2); g.fill();
+    }
+    g.fillStyle = C.poreC; g.beginPath(); g.arc(px, py, or*.3, 0, Math.PI*2); g.fill();
+  }
+}
+
+// callout label w connector
+function anno(ax, ay, lx, ly, text, col, op) {
+  if (op === undefined) op = 1;
+  if (op < 0.04) return;
+  g.save(); g.globalAlpha = op;
+  g.font = '11px system-ui,sans-serif';
+  const tw = g.measureText(text).width + 14, th = 19;
+  const right = lx >= ax;
+  const tx = right ? lx + 3 : lx - tw - 3;
+  const ty = Math.round(ly - th/2);
+  g.strokeStyle = 'rgba(80,110,155,0.26)'; g.lineWidth = 0.85;
+  g.beginPath(); g.moveTo(ax, ay);
+  g.bezierCurveTo((ax+lx)/2, ay, (ax+lx)/2, ly, lx, ly); g.stroke();
+  g.fillStyle = 'rgba(90,120,165,0.42)';
+  g.beginPath(); g.arc(ax, ay, 1.8, 0, Math.PI*2); g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.97)'; g.strokeStyle = col + '44'; g.lineWidth = 0.7;
+  if (g.roundRect) { g.beginPath(); g.roundRect(tx, ty, tw, th, 4); }
+  else { g.beginPath(); g.rect(tx, ty, tw, th); }
+  g.fill(); g.stroke();
+  g.fillStyle = col; g.textAlign = 'left'; g.fillText(text, tx+7, ty+13.5); g.textAlign = 'left';
+  g.restore();
+}
+
+// upward gene label
+function geneLabelUp(cx, arrowTopY, name, col, op, big) {
+  if (op < 0.04) return;
+  g.save(); g.globalAlpha = op;
+  g.font = (big ? '600 ' : '') + '10.5px system-ui,sans-serif';
+  const tw = g.measureText(name).width + 10, th = 16;
+  const boxY = arrowTopY + 18, bx = cx - tw/2;
+  g.fillStyle = col;
+  g.beginPath(); g.moveTo(cx, arrowTopY); g.lineTo(cx-4, arrowTopY+8); g.lineTo(cx+4, arrowTopY+8); g.closePath(); g.fill();
+  g.strokeStyle = col; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(cx, arrowTopY+8); g.lineTo(cx, boxY); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.96)'; g.strokeStyle = col + '55'; g.lineWidth = 0.8;
+  if (g.roundRect) { g.beginPath(); g.roundRect(bx, boxY, tw, th, 3); }
+  else { g.beginPath(); g.rect(bx, boxY, tw, th); }
+  g.fill(); g.stroke();
+  g.fillStyle = col; g.textAlign = 'center'; g.fillText(name, cx, boxY+11.5); g.textAlign = 'left';
+  g.restore();
+}
+
+// repressed gene label. box w strikethrough
+function geneLabelBelowDown(cx, topY, name, col, op) {
+  if (op < 0.04) return;
+  g.save(); g.globalAlpha = op;
+  g.font = '10.5px system-ui,sans-serif';
+  const tw = g.measureText(name).width + 10, th = 16, bx = cx - tw/2;
+  const boxY = topY, arrowTip = boxY + th + 18;
+  g.fillStyle = 'rgba(255,238,238,0.96)'; g.strokeStyle = col + '55'; g.lineWidth = 0.8;
+  if (g.roundRect) { g.beginPath(); g.roundRect(bx, boxY, tw, th, 3); }
+  else { g.beginPath(); g.rect(bx, boxY, tw, th); }
+  g.fill(); g.stroke();
+  g.fillStyle = col; g.textAlign = 'center'; g.fillText(name, cx, boxY+11.5); g.textAlign = 'left';
+  g.strokeStyle = col + 'bb'; g.lineWidth = 1.3;
+  g.beginPath(); g.moveTo(bx+5, boxY+th/2); g.lineTo(bx+tw-5, boxY+th/2); g.stroke();
+  g.strokeStyle = col; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(cx, boxY+th); g.lineTo(cx, arrowTip-8); g.stroke();
+  g.fillStyle = col; g.beginPath();
+  g.moveTo(cx, arrowTip); g.lineTo(cx-4, arrowTip-8); g.lineTo(cx+4, arrowTip-8);
+  g.closePath(); g.fill();
+  g.restore();
+}
+
+function drawGRE(cx, cy, op) {
+  if (op < 0.04) return;
+  g.save(); g.globalAlpha = op;
+  g.fillStyle = 'rgba(200,152,0,0.14)'; g.strokeStyle = 'rgba(175,125,0,0.55)'; g.lineWidth = 1.5;
+  if (g.roundRect) { g.beginPath(); g.roundRect(cx-30, cy-10, 60, 20, 4); }
+  else { g.beginPath(); g.rect(cx-30, cy-10, 60, 20); }
+  g.fill(); g.stroke();
+  g.font = 'bold 9.5px system-ui'; g.fillStyle = 'rgba(130,88,0,0.88)';
+  g.textAlign = 'center'; g.fillText('GRE', cx, cy+3.5); g.textAlign = 'left';
+  g.restore();
+}
+
+function drawPromoter(cx, cy, op) {
+  if (op < 0.04) return;
+  g.save(); g.globalAlpha = op;
+  g.fillStyle = 'rgba(155,28,28,0.1)'; g.strokeStyle = 'rgba(135,28,28,0.44)'; g.lineWidth = 1.5;
+  if (g.roundRect) { g.beginPath(); g.roundRect(cx-40, cy-10, 80, 20, 4); }
+  else { g.beginPath(); g.rect(cx-40, cy-10, 80, 20); }
+  g.fill(); g.stroke();
+  g.font = 'bold 8.5px system-ui'; g.fillStyle = 'rgba(120,22,22,0.78)';
+  g.textAlign = 'center'; g.fillText('NF-\u03baB/AP-1 site', cx, cy+3.5); g.textAlign = 'left';
+  g.restore();
+}
+
+// progress dots at bottom
+function dots(t) {
+  if (curS(t) === 'intro') return;
+  const names = ['idle','ligand','fkbp','dynein','walk','entry','dissoc','dimer','transact','transrep','grdim'];
+  const cur = curS(t);
+  const ci = names.indexOf(cur === 'hold' ? 'dissoc' : cur);
+  const sx = W/2 - (names.length - 1) * 22/2, sy = H - 22;
+  names.forEach((_, i) => {
+    const act = i === ci;
+    if (act) {
+      g.strokeStyle = C.gr + '40'; g.lineWidth = 3.5;
+      g.beginPath(); g.arc(sx + i*22, sy, 13, 0, Math.PI*2); g.stroke();
+    }
+    g.beginPath(); g.arc(sx + i*22, sy, act ? 8.5 : i < ci ? 6 : 4, 0, Math.PI*2);
+    g.fillStyle = act ? C.gr : i < ci ? '#7aaae0' : '#c5d5e8';
+    g.fill();
+  });
+}
+
+// fades in at start then out
+function cytoLbl(t) {
+  const raw = t < 1.5 ? t/1.5 : t < 4 ? 1 : Math.max(0, 1 - (t-6)/1.8);
+  const a = raw * 0.09;
+  if (a < 0.005) return;
+  g.save(); g.globalAlpha = a;
+  g.font = 'bold 46px system-ui,sans-serif'; g.fillStyle = '#3a5888';
+  g.textAlign = 'center'; g.fillText('CYTOPLASM', W*0.4, H*0.2);
+  g.restore();
+}
+
+function legend(t) {
+  const fa = clamp((t - 0.5) / 1.5, 0, 1) * 0.92;
+  if (fa < 0.02) return;
+  g.save(); g.globalAlpha = fa;
+  function dot(x, y, r, c, cL, txt) {
+    const ix = Math.round(x), iy = Math.round(y);
+    const gr = g.createRadialGradient(ix-r*.3, iy-r*.32, 1, ix, iy, r);
+    gr.addColorStop(0, cL); gr.addColorStop(1, c);
+    g.fillStyle = gr; g.beginPath(); g.arc(ix, iy, r, 0, Math.PI*2); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.18)';
+    g.beginPath(); g.arc(ix-r*.24, iy-r*.3, r*.35, 0, Math.PI*2); g.fill();
+    if (txt) { g.font = 'bold 8.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.9)'; g.textAlign = 'center'; g.fillText(txt, ix, iy+3); g.textAlign = 'left'; }
+  }
+  const LX = 22, BTM = H - 20, ROW = 32, ICW = 36, GAP = 12;
+  const items = [
+    {l:'Glucocorticoid receptor', draw:(x,y)=>dot(x,y,12,C.gr,C.grL,'GR')},
+    {l:'HSP90 (chaperone dimer)', draw:(x,y)=>{
+      const or=10,ow=or*1.22;
+      [-1,1].forEach(sv=>{
+        g.strokeStyle=C.hsp;g.lineWidth=5;g.lineCap='round';
+        g.beginPath();g.moveTo(x,y-or*.82);
+        g.bezierCurveTo(x+sv*ow*.5,y-or*.9,x+sv*ow*.84,y-or*.36,x+sv*ow*.82,y);
+        g.bezierCurveTo(x+sv*ow*.84,y+or*.36,x+sv*ow*.5,y+or*.9,x,y+or*.82);g.stroke();
+      });
+      dot(x,y-or*.82,4,C.hsp,C.hspL,'');dot(x,y+or*.82,4,C.hsp,C.hspL,'');
+    }},
+    {l:'FKBP51 ; inhibitory immunophilin', draw:(x,y)=>dot(x,y,12,C.f51,C.f51L,'51')},
+    {l:'FKBP52 ; activating immunophilin', draw:(x,y)=>dot(x,y,12,C.f52,C.f52L,'52')},
+    {l:'Dynein/dynactin complex', draw:(x,y)=>{
+      const d1x=Math.round(x-8),d1y=Math.round(y+10),d2x=Math.round(x+8),d2y=Math.round(y+10);
+      g.strokeStyle=C.dyn;g.lineWidth=2;g.lineCap='round';
+      g.beginPath();g.moveTo(Math.round(x),Math.round(y-6));g.lineTo(d1x,d1y-8);g.stroke();
+      g.beginPath();g.moveTo(Math.round(x),Math.round(y-6));g.lineTo(d2x,d2y-8);g.stroke();
+      dot(d1x,d1y,8,C.dyn,C.dynL,'');dot(d2x,d2y,8,C.dyn,C.dynL,'');
+    }},
+    {l:'Importin \u03b1/\u03b2 (nuclear transport)', draw:(x,y)=>dot(x,y,12,C.imp,C.impL,'i\u03b1')},
+    {l:'Prednisolone', draw:(x,y)=>{
+      const gr=g.createRadialGradient(x-3,y-3,1,x,y,10);
+      gr.addColorStop(0,C.predL);gr.addColorStop(1,C.pred);g.fillStyle=gr;g.beginPath();
+      for(let i=0;i<6;i++){const a=(Math.PI/3)*i-Math.PI/6;if(i===0)g.moveTo(x+10*Math.cos(a),y+10*Math.sin(a));else g.lineTo(x+10*Math.cos(a),y+10*Math.sin(a));}
+      g.closePath();g.fill();
+    }},
+    {l:'\u03b1/\u03b2-tubulin (microtubule)', draw:(x,y)=>{
+      [-9,9].forEach((dx,i)=>{
+        const c1=i===0?'#9ab8d0':'#b2ccec',c2=i===0?'#3a5888':'#5878a0';
+        const gr=g.createRadialGradient(x+dx-2,y-2,.5,x+dx,y,8);
+        gr.addColorStop(0,c1);gr.addColorStop(1,c2);
+        g.fillStyle=gr;g.beginPath();g.ellipse(x+dx,y,8,6,0,0,Math.PI*2);g.fill();
+      });
+    }},
+    {l:'NF-\u03baB (p65/p50 ; transcription factor)', draw:(x,y)=>dot(x,y,12,C.nfkb,C.nfkbL,'p65')},
+    {l:'AP-1 (c-Fos/c-Jun ; transcription factor)', draw:(x,y)=>dot(x,y,12,C.ap1,C.ap1L,'AP1')},
+  ];
+  const n = items.length, panH = n*ROW+20, panW = 314, panY = BTM - panH - 4;
+  g.fillStyle = 'rgba(255,255,255,0.78)'; g.strokeStyle = 'rgba(70,110,190,0.38)'; g.lineWidth = 1.2;
+  if (g.roundRect) { g.beginPath(); g.roundRect(LX-10, panY-10, panW, panH, 8); }
+  else { g.beginPath(); g.rect(LX-10, panY-10, panW, panH); }
+  g.fill(); g.stroke();
+  items.forEach((item, i) => {
+    const iy = panY + i*ROW + ROW/2 - 2, ix = LX + ICW/2;
+    item.draw(ix, iy);
+    g.font = '12px system-ui,sans-serif'; g.fillStyle = C.label; g.textAlign = 'left';
+    g.fillText(item.l, Math.round(LX+ICW+GAP), Math.round(iy+4.5));
+  });
+  g.restore();
+}
+
+var frame = 0;
+
+function render() {
+  const t = (frame % (LOOP * FPS)) / FPS;
+
+  const lp = sp('ligand', t), fp = sp('fkbp', t), dp = sp('dynein', t);
+  const wp = sp('walk', t), ep = sp('entry', t), disp = sp('dissoc', t), idp = sp('idle', t);
+  const dimerP = sp('dimer', t), transactP = sp('transact', t);
+  const transrepP = sp('transrep', t), grdimP = sp('grdim', t);
+  const stage = curS(t);
+  const genomic = (stage === 'dimer' || stage === 'transact' || stage === 'transrep' || stage === 'grdim');
+
+  // GR pos. follows microtubule track then enters nucleus
+  let cx = CX0, cy = CY0;
+  if (ep > 0) { cx = lerp(PX-52, NX, eio(ep)); cy = lerp(CY0, NY, eio(ep)); }
+  else if (wp > 0) { cx = lerp(CX0, PX-52, eio(wp)); cy = CY0; }
+  const h1x = cx - 16, h2x = cx + 10;
+
+  // fkbp51 leaves after displacement
+  const f51fly = clamp((fp - 0.26) / 0.32, 0, 1);
+  const f51rx = CX0 + 50, f51ry = CY0 - 4;
+  const f51x = f51rx + eo(f51fly) * 122;
+  const f51y = f51ry - eo(f51fly) * 104;
+  const f51A = t < ST.fkbp[1] ? (fp > 0.26 ? Math.max(0, 1 - (fp-0.26)/0.32) : 1) : 0;
+
+  const f52show = clamp((fp - 0.18) / 0.22, 0, 1);
+  const f52x = cx + 50;
+  const f52y = (cy - 4) + (1 - eo(f52show)) * 82;
+  const f52A = eo(f52show) * Math.max(0, 1 - disp * 2.2);
+
+  const dynCargoA = clamp(dp / 0.36, 0, 1) * Math.max(0, 1 - disp*2.5) * Math.max(0, 1 - clamp((wp-0.82)/0.15, 0, 1));
+
+  const impA = ep > 0 ? clamp((ep-0.1)/0.22, 0, 1) * Math.max(0, 1 - clamp((ep-0.78)/0.16, 0, 1)) : 0;
+  const impX = lerp(PX-18, NX-30, eo(ep));
+  const impY = lerp(CY0-18, NY-18, eio(ep));
+
+  // genomic stage positioning
+  const gr1Shift = genomic ? lerp(0, -13, eo(clamp(dimerP*3, 0, 1))) : 0;
+  const dimerDocP = eo(clamp(transactP * 1.5, 0, 1));
+  const dimerOffY = lerp(0, GRE_Y - 30 - NY, dimerDocP);
+  const gr2InP = clamp(dimerP * 2.0, 0, 1);
+  const gr2A = genomic ? clamp(dimerP / 0.1, 0, 1) : 0;
+  const gr2FX = lerp(NX+65, NX+13, eo(gr2InP));
+  const gr2FY = lerp(NY-55, NY, eo(gr2InP)) + (genomic ? dimerOffY : 0);
+  const dimerAlpha = genomic ? (stage === 'transrep' ? 0.12 : stage === 'grdim' ? 0.58 : 1) : 0;
+
+  const monoP = clamp((transrepP - 0.25) / 0.32, 0, 1);
+  const monoA_base = stage === 'transrep' ? clamp((transrepP-0.18)/0.15, 0, 1) : stage === 'grdim' ? 0.68 : 0;
+  const monoX = lerp(NX+8, PROMO_X, eo(monoP));
+  const monoY = lerp(NY-90, PROMO_Y-34, eo(monoP));
+
+  const grfree = disp > 0.52 ? clamp((disp-0.52)/.38, 0, 1) : 0;
+
+  tickCam(t);
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  cytoLbl(t);
+
+  g.save(); pushCam();
+
+  // nucleus background
+  g.fillStyle = C.nucF; g.beginPath(); g.ellipse(NX, NY, NRX, NRY, 0, 0, Math.PI*2); g.fill();
+
+  if (stage === 'transact' || stage === 'grdim')
+    drawGRE(GRE_X, GRE_Y, clamp(transactP/0.2, 0, 1) * (stage === 'grdim' ? 0.75 : 1));
+  if (stage === 'transrep' || stage === 'grdim')
+    drawPromoter(PROMO_X, PROMO_Y, clamp(transrepP/0.18, 0, 1) * (stage === 'grdim' ? 0.72 : 1));
+
+  // dna waves inside nucleus
+  g.strokeStyle = 'rgba(40,90,200,0.16)'; g.lineWidth = 1.8;
+  for (let i = 0; i < 4; i++) {
+    g.beginPath();
+    for (let x = 0; x <= 74; x += 2) {
+      const y = NY + Math.sin((x/74) * Math.PI*3.2 + i*1.9 + frame/100) * 13;
+      x === 0 ? g.moveTo(NX-78+i*44+x, y) : g.lineTo(NX-78+i*44+x, y);
+    }
+    g.stroke();
+  }
+
+  g.strokeStyle = C.nucI; g.lineWidth = 1.5;
+  g.beginPath(); g.ellipse(NX, NY, NRX-8, NRY-8, 0, 0, Math.PI*2); g.stroke();
+  g.strokeStyle = C.nucO; g.lineWidth = 2.5;
+  g.beginPath(); g.ellipse(NX, NY, NRX, NRY, 0, 0, Math.PI*2); g.stroke();
+
+  g.font = 'bold 30px system-ui'; g.fillStyle = 'rgba(30,62,152,0.22)';
+  g.textAlign = 'center'; g.fillText('NUCLEUS', NX, NY - NRY + 80); g.textAlign = 'left';
+
+  // pore complex glows when GR passes through
+  const poreGlow = ep > 0 ? clamp(ep * 3.5, 0, 1) : 0;
+  const pAngles = [Math.PI, Math.PI*.52, Math.PI*1.48, Math.PI*.22, Math.PI*1.78, Math.PI*.82, Math.PI*1.18];
+  for (let i = 0; i < pAngles.length; i++)
+    npc(NX + NRX*Math.cos(pAngles[i]), NY + NRY*Math.sin(pAngles[i]), i === 0, i === 0 ? poreGlow : 0);
+  if (stage === 'entry' && ep < 0.45)
+    anno(NX-NRX-2, NY-14, NX-NRX-56, NY-54, 'nuclear pore complex', C.pore, clamp(ep*5, 0, 1));
+
+  if (dp > 0) {
+    const mta = clamp(dp*2.5, 0, 1) * Math.max(0, 1 - disp*3);
+    if (mta > 0) micro(mta);
+  }
+
+  // initial idle labels
+  const idleA = idp < 0.18 ? idp/0.18 : idp < 0.48 ? 1 : idp < 0.56 ? Math.max(0, 1-(idp-0.48)/0.08) : 0;
+  if (stage === 'idle' && idleA > 0) {
+    anno(CX0-48, CY0-4, CX0-96, CY0-44, 'HSP90', C.hsp, idleA);
+    anno(CX0, CY0+26, CX0+22, CY0+72, 'glucocorticoid receptor', C.gr, idleA);
+    anno(f51rx+12, f51ry-10, f51rx+58, f51ry-34, 'FKBP51', C.f51, idleA);
+  }
+
+  // prednisolone travelling in
+  if (lp > 0 && lp < 1) {
+    const fade = lp < 0.1 ? lp*10 : lp > 0.84 ? (1-lp)/0.16 : 1;
+    const pp = clamp(lp / 0.74, 0, 1);
+    const lx = lerp(68, cx+22, eo(pp)), ly = lerp(cy-130, cy-27, eo(pp));
+    g.save(); g.globalAlpha = fade;
+    const pgr = g.createRadialGradient(lx-4, ly-4, 1, lx, ly, 14);
+    pgr.addColorStop(0, C.predL); pgr.addColorStop(1, C.pred);
+    g.fillStyle = pgr; g.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI/3)*i - Math.PI/6;
+      if (i === 0) g.moveTo(lx + 13*Math.cos(a), ly + 13*Math.sin(a));
+      else g.lineTo(lx + 13*Math.cos(a), ly + 13*Math.sin(a));
+    }
+    g.closePath(); g.fill(); g.restore();
+    if (pp < 0.5) anno(lx+12, ly-4, lx+62, ly-38, 'prednisolone', C.pred, fade);
+  }
+
+  // cytoplasmic GR complex
+  if (!genomic) {
+    hsp90(cx, cy, 22, disp > 0 ? Math.max(0, 1 - disp/0.44) : 1);
+    const grCoreA = disp > 0.52 ? Math.max(0, 1-(disp-0.52)/.38) : 1;
+    sph(cx, cy, 22, C.gr, C.grL, grCoreA);
+    g.save(); g.globalAlpha = grCoreA;
+    g.font = 'bold 10.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.96)';
+    g.textAlign = 'center'; g.fillText('GR', cx, cy+3.8); g.textAlign = 'left';
+    g.restore();
+    const bndA = lp > 0.8 ? clamp((lp-0.8)/.16, 0, 1) * Math.max(0, 1 - disp*3) : 0;
+    if (bndA > 0) {
+      g.save(); g.globalAlpha = bndA; g.fillStyle = C.pred; g.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI/3)*i - Math.PI/6;
+        if (i === 0) g.moveTo(cx+18 + 7*Math.cos(a), cy-17 + 7*Math.sin(a));
+        else g.lineTo(cx+18 + 7*Math.cos(a), cy-17 + 7*Math.sin(a));
+      }
+      g.closePath(); g.fill(); g.restore();
+    }
+  }
+
+  if (!genomic && f51A > 0) {
+    sph(f51x, f51y, 15, C.f51, C.f51L, f51A);
+    g.save(); g.globalAlpha = f51A;
+    g.font = '500 8.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.93)';
+    g.textAlign = 'center'; g.fillText('51', f51x, f51y+3); g.textAlign = 'left';
+    g.restore();
+  }
+
+  if (!genomic && f52A > 0) {
+    sph(f52x, f52y, 15, C.f52, C.f52L, f52A);
+    g.save(); g.globalAlpha = f52A;
+    g.font = '500 8.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.93)';
+    g.textAlign = 'center'; g.fillText('52', f52x, f52y+3); g.textAlign = 'left';
+    g.restore();
+  }
+
+  if (stage === 'fkbp') {
+    const pA = clamp(fp/0.07, 0, 1) * Math.max(0, 1 - clamp((fp-0.09)/0.06, 0, 1));
+    if (pA > 0.04) anno(f51rx+14, f51ry-8, f51rx+60, f51ry-34, 'FKBP51 ; maintains inactive state', C.f51, pA);
+    const pB = clamp((fp-0.27)/0.06, 0, 1) * Math.max(0, 1 - clamp((fp-0.36)/0.06, 0, 1)) * f51A;
+    if (pB > 0.04) anno(f51x+10, f51y, f51x+54, f51y-24, 'displaced', C.f51, pB);
+    const pC = clamp((fp-0.58)/0.08, 0, 1) * Math.max(0, 1 - clamp((fp-0.80)/0.08, 0, 1));
+    if (pC > 0.04 && f52A > 0.1) anno(f52x-14, f52y-8, f52x-70, f52y-34, 'FKBP52 physically displaces 51', C.f52, pC);
+  }
+
+  if (!genomic && dynCargoA > 0) dyneinDraw(cx, cy, h1x, HEAD_Y, h2x, HEAD_Y, dynCargoA);
+  if (stage === 'dynein') {
+    const d1 = clamp((dp-0.4)/0.18, 0, 1) * Math.max(0, 1 - clamp((dp-0.70)/0.18, 0, 1));
+    if (d1 > 0.04) anno(cx, HEAD_Y+17, cx+46, HEAD_Y+46, 'dynein/dynactin ; retrograde motor', C.dyn, d1);
+    const d2 = clamp((dp-0.54)/0.16, 0, 1) * Math.max(0, 1 - clamp((dp-0.80)/0.16, 0, 1));
+    if (d2 > 0.04 && f52A > 0.2) anno(f52x-14, f52y, f52x-74, f52y, 'FKBP52 ; recruits dynein/dynactin', C.f52, d2);
+  }
+
+  if (impA > 0) {
+    sph(impX, impY, 14, C.imp, C.impL, impA);
+    g.save(); g.globalAlpha = impA;
+    g.font = 'bold 7.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.9)';
+    g.textAlign = 'center'; g.fillText('i\u03b1', impX, impY+2.8); g.textAlign = 'left';
+    g.restore();
+    if (ep > 0.16 && ep < 0.84)
+      anno(impX-14, impY-28, impX-66, impY-66, 'importin \u03b1/\u03b2 ; NLS recognition', C.imp, impA*0.9);
+  }
+
+  if (!genomic && disp > 0 && disp < 1) hsp90Dissoc(NX, NY, 22, disp);
+
+  if (!genomic && grfree > 0) {
+    sph(NX, NY, 26, C.gr, C.grL, grfree);
+    g.save(); g.globalAlpha = grfree;
+    g.font = 'bold 11px system-ui'; g.fillStyle = 'rgba(255,255,255,0.96)';
+    g.textAlign = 'center'; g.fillText('GR', NX, NY+4); g.textAlign = 'left';
+    g.restore();
+    const gfl = clamp((grfree-.55)/.28, 0, 1);
+    if (gfl > 0.04) anno(NX, NY-32, NX-32, NY-68, 'active GR ; AF-2 exposed', C.gr, gfl);
+  }
+
+  // nuclear / genomic stages
+  if (genomic) {
+    const gr1FX = NX + gr1Shift, gr1FY = NY + dimerOffY;
+    const dimCX = NX, dimCY = NY + dimerOffY;
+
+    sph(gr1FX, gr1FY, 26, C.gr, C.grL, dimerAlpha);
+    g.save(); g.globalAlpha = dimerAlpha;
+    g.font = 'bold 11px system-ui'; g.fillStyle = 'rgba(255,255,255,0.96)';
+    g.textAlign = 'center'; g.fillText('GR', gr1FX, gr1FY+4); g.textAlign = 'left';
+    g.restore();
+
+    if (gr2A > 0.02) {
+      sph(gr2FX, gr2FY, 26, C.gr, C.grL, gr2A * dimerAlpha);
+      g.save(); g.globalAlpha = gr2A * dimerAlpha;
+      g.font = 'bold 11px system-ui'; g.fillStyle = 'rgba(255,255,255,0.96)';
+      g.textAlign = 'center'; g.fillText('GR', gr2FX, gr2FY+4); g.textAlign = 'left';
+      g.restore();
+    }
+
+    if (gr2A > 0.75 && dimerP > 0.45) {
+      const linkA = clamp((dimerP-0.45)/0.1, 0, 1) * dimerAlpha;
+      g.save(); g.globalAlpha = linkA * .32;
+      g.strokeStyle = C.gr; g.lineWidth = 6;
+      g.beginPath(); g.moveTo(gr1FX, gr1FY); g.lineTo(gr2FX, gr2FY); g.stroke();
+      g.restore();
+    }
+
+    // flash ring on snap
+    if (stage === 'dimer') {
+      const snapFrac = clamp((dimerP-0.42)/0.1, 0, 1);
+      if (snapFrac > 0 && snapFrac < 0.92 && gr2A > 0.5) {
+        const snapFlash = snapFrac < 0.45 ? snapFrac/0.45 : Math.max(0, 1-(snapFrac-0.45)/0.4);
+        if (snapFlash > 0.05) {
+          g.save(); g.globalAlpha = snapFlash * 0.72;
+          g.strokeStyle = '#f5d84a'; g.lineWidth = 2.5;
+          g.beginPath(); g.arc(dimCX, dimCY, 48, 0, Math.PI*2); g.stroke();
+          g.restore();
+        }
+      }
+    }
+
+    // ring label hopefully stays on thru transact + grdim
+    const ringA_stage = stage === 'dimer' ? clamp((dimerP-0.52)/0.12, 0, 1) : 0;
+    const ringA = ringA_stage * Math.max(0.15, gr2A);
+    if (ringA > 0.04) {
+      const ringR = 44;
+      g.save(); g.globalAlpha = ringA;
+      g.strokeStyle = C.amberL; g.lineWidth = 1.8;
+      g.beginPath(); g.arc(dimCX, dimCY, ringR, 0, Math.PI*2); g.stroke();
+      g.restore();
+      g.save(); g.globalAlpha = ringA;
+      g.font = '600 11px system-ui,sans-serif'; g.fillStyle = C.amber;
+      g.textAlign = 'center'; g.fillText('GR homodimer', dimCX, dimCY - ringR - 7);
+      g.textAlign = 'left'; g.restore();
+    }
+  }
+
+  // transactivation
+  if (stage === 'transact' || stage === 'grdim') {
+    const tA = stage === 'grdim' ? 0.72 : 1;
+    const g1A = clamp((transactP-0.26)/0.12, 0, 1) * tA;
+    const g2A = clamp((transactP-0.38)/0.12, 0, 1) * tA;
+    const g3A = clamp((transactP-0.50)/0.12, 0, 1) * tA;
+    const g4A = clamp((transactP-0.62)/0.12, 0, 1) * tA;
+    const otherFade = stage === 'transact' ? Math.max(0, 1 - clamp((transactP-0.78)/0.10, 0, 1)) : 1;
+
+    geneLabelUp(GPOS[0], GENE_Y, 'GILZ',  C.gene, g1A * otherFade);
+    geneLabelUp(GPOS[2], GENE_Y, 'IkB-\u03b1', C.gene, g3A * otherFade);
+    geneLabelUp(GPOS[3], GENE_Y, 'AnxA1', C.gene, g4A * otherFade);
+
+    if (stage === 'grdim') {
+      const glowA = clamp((grdimP-0.18)/0.22, 0, 1) * g2A;
+      if (glowA > 0.04) {
+        g.save(); g.globalAlpha = glowA * 0.38;
+        g.shadowBlur = 18; g.shadowColor = '#f5d84a';
+        g.fillStyle = '#f5d84a'; g.beginPath(); g.arc(GPOS[1], GENE_Y+26, 22, 0, Math.PI*2); g.fill();
+        g.shadowBlur = 0; g.restore();
+      }
+    }
+    geneLabelUp(GPOS[1], GENE_Y, 'DUSP1', C.gene, g2A, true);
+
+    if (stage === 'transact') {
+      const caA = clamp((transactP-0.82)/0.10, 0, 1) * Math.max(0, 1-clamp((transactP-0.97)/0.03, 0, 1)) * g2A;
+      if (caA > 0.04) {
+        g.save(); g.globalAlpha = caA;
+        const callText = 'inactivates p38, JNK, ERK';
+        g.font = '10.5px system-ui,sans-serif';
+        const ctw = g.measureText(callText).width + 12, cth = 17;
+        const cbx = GPOS[1] - ctw/2, cby = GENE_Y - cth - 10;
+        g.fillStyle = 'rgba(255,255,255,0.96)'; g.strokeStyle = C.label + '44'; g.lineWidth = 0.8;
+        if (g.roundRect) { g.beginPath(); g.roundRect(cbx, cby, ctw, cth, 3); }
+        else { g.beginPath(); g.rect(cbx, cby, ctw, cth); }
+        g.fill(); g.stroke();
+        g.fillStyle = C.label; g.textAlign = 'center'; g.fillText(callText, GPOS[1], cby+12.5);
+        g.textAlign = 'left'; g.restore();
+      }
+      const dA = clamp((transactP-0.08)/0.16, 0, 1) * Math.max(0, 1-clamp((transactP-0.3)/0.14, 0, 1));
+      if (dA > 0.04) anno(GRE_X+32, GRE_Y, GRE_X+72, GRE_Y+36, 'GRE binding ; transactivation', C.gr, dA);
+    }
+  }
+
+  // transrepression
+  if (stage === 'transrep' || stage === 'grdim') {
+    const tRA = stage === 'grdim' ? 0.68 : 1;
+    const nfkbA = clamp(transrepP / 0.2, 0, 1) * tRA;
+    const ap1A  = clamp((transrepP - 0.06) / 0.2, 0, 1) * tRA;
+
+    if (nfkbA > 0.02) {
+      sph(PROMO_X-20, PROMO_Y-24, 13, C.nfkb, C.nfkbL, nfkbA);
+      sph(PROMO_X-6,  PROMO_Y-20, 10, C.nfkb, '#e05050', nfkbA*.85);
+      g.save(); g.globalAlpha = nfkbA;
+      g.font = 'bold 7px system-ui'; g.fillStyle = 'rgba(255,255,255,0.88)';
+      g.textAlign = 'center';
+      g.fillText('p65', PROMO_X-20, PROMO_Y-24+2.5);
+      g.fillText('p50', PROMO_X-6,  PROMO_Y-20+2.5);
+      g.textAlign = 'left'; g.restore();
+      if (stage === 'transrep') {
+        const nlA = clamp((transrepP-0.22)/0.12, 0, 1) * Math.max(0, 1-clamp((transrepP-0.46)/0.12, 0, 1));
+        if (nlA > 0.04) anno(PROMO_X-20, PROMO_Y-14, PROMO_X-2, PROMO_Y+58, 'NF-\u03baB ; p65/p50', C.nfkb, nlA);
+      }
+    }
+
+    if (ap1A > 0.02) {
+      sph(PROMO_X+18, PROMO_Y-26, 11, C.ap1, C.ap1L, ap1A);
+      sph(PROMO_X+30, PROMO_Y-20,  9, C.ap1, '#e08040', ap1A*.8);
+      g.save(); g.globalAlpha = ap1A;
+      g.font = 'bold 6.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.86)';
+      g.textAlign = 'center';
+      g.fillText('Fos', PROMO_X+18, PROMO_Y-26+2.5);
+      g.fillText('Jun', PROMO_X+30, PROMO_Y-20+2.5);
+      g.textAlign = 'left'; g.restore();
+      if (stage === 'transrep') {
+        const alA = clamp((transrepP-0.26)/0.12, 0, 1) * Math.max(0, 1-clamp((transrepP-0.5)/0.12, 0, 1));
+        if (alA > 0.04) anno(PROMO_X+26, PROMO_Y-14, PROMO_X+88, PROMO_Y+48, 'AP-1 ; c-Fos/c-Jun', C.ap1, alA);
+      }
+    }
+
+    if (monoA_base > 0.02) {
+      sph(monoX, monoY, 20, C.gr, C.grL, monoA_base);
+      g.save(); g.globalAlpha = monoA_base;
+      g.font = 'bold 9.5px system-ui'; g.fillStyle = 'rgba(255,255,255,0.96)';
+      g.textAlign = 'center'; g.fillText('GR', monoX, monoY+3.5); g.textAlign = 'left';
+      g.restore();
+      if (stage === 'transrep' && monoP > 0.72) {
+        const mlA = clamp((transrepP-0.62)/0.12, 0, 1) * Math.max(0, 1-clamp((transrepP-0.86)/0.1, 0, 1));
+        if (mlA > 0.04) anno(monoX+18, monoY, monoX+62, monoY-36, 'GR monomer ; tethering', C.gr, mlA);
+      }
+      const tetherA = clamp((monoP-0.76)/0.18, 0, 1) * monoA_base;
+      if (tetherA > 0.04) {
+        g.save(); g.globalAlpha = tetherA * .42;
+        g.strokeStyle = C.gr; g.lineWidth = 1.2; g.setLineDash([3, 2]);
+        g.beginPath(); g.moveTo(monoX, monoY+18); g.lineTo(PROMO_X-18, PROMO_Y-24-11); g.stroke();
+        g.beginPath(); g.moveTo(monoX, monoY+18); g.lineTo(PROMO_X+22, PROMO_Y-24-9);  g.stroke();
+        g.setLineDash([]); g.restore();
+      }
+    }
+
+    // repressed genes
+    const SGENE_BASE = PROMO_Y + 40;
+    const sg1A = clamp((transrepP-0.50)/0.12, 0, 1) * tRA;
+    const sg2A = clamp((transrepP-0.58)/0.12, 0, 1) * tRA;
+    const sg3A = clamp((transrepP-0.66)/0.12, 0, 1) * tRA;
+    geneLabelBelowDown(PROMO_X-18, SGENE_BASE, 'COX-2',    C.nfkb, sg1A);
+    geneLabelBelowDown(PROMO_X+36, SGENE_BASE, 'IL-6',     C.nfkb, sg2A);
+    geneLabelBelowDown(PROMO_X+90, SGENE_BASE, 'TNF-\u03b1', C.nfkb, sg3A);
+
+    if (stage === 'transrep') {
+      const trA = clamp((transrepP-0.76)/0.14, 0, 1);
+      if (trA > 0.04) anno(PROMO_X-22, PROMO_Y+20, PROMO_X+44, PROMO_Y+26, 'no DNA contact ; tethering only', C.label, trA*0.72);
+    }
+  }
+
+  g.restore();
+  legend(t);
+  dots(t);
+  frame++;
+  requestAnimationFrame(render);
+}
+
+render();
+</script>
+</body>
+</html>

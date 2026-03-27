@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;}
+body{background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+canvas{display:block;}
+p{font:13px system-ui,sans-serif;color:#152030;margin-top:10px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="c" width="200" height="200"></canvas>
+<p>NF-κB (p65/p50 transcription factor)</p>
+<script>
+'use strict';
+const cv=document.getElementById('c'),g=cv.getContext('2d');
+const W=200,H=200,cx=100,cy=100;
+const C={gr:"#1a5bcc",grL:"#6ea0f8",hsp:"#b85808",hspL:"#f0a840",f51:"#b01818",f51L:"#ee8080",f52:"#0e7838",f52L:"#4ece7e",dyn:"#6814aa",dynL:"#be82f0",pred:"#b88000",predL:"#f5d84a",imp:"#607080",impL:"#a8bece",nfkb:"#aa1010",nfkbL:"#f07070",ap1:"#a85008",ap1L:"#f0a050"};
+function sph(x,y,r,col,colL,op){
+  if(op===undefined)op=1;
+  g.save();g.globalAlpha=op;
+  const gr=g.createRadialGradient(x-r*.32,y-r*.34,r*.02,x+r*.08,y+r*.08,r*1.04);
+  gr.addColorStop(0,colL);gr.addColorStop(1,col);
+  g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();
+  g.fillStyle='rgba(255,255,255,0.18)';g.beginPath();g.arc(x-r*.26,y-r*.3,r*.38,0,Math.PI*2);g.fill();
+  g.restore();
+}
+
+sph(cx-12,cy,26,C.nfkb,C.nfkbL);
+sph(cx+14,cy+4,20,"#cc2020","#e05050");
+g.font="bold 9px system-ui";g.fillStyle="rgba(255,255,255,0.88)";
+g.textAlign="center";
+g.fillText("p65",cx-12,cy+3.5);
+g.fillText("p50",cx+14,cy+7.5);
+
+</script>
+</body>
+</html>

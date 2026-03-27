@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GR Signaling Components</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#f8f9fb; font-family:system-ui,sans-serif; padding:40px; }
+h1 { font-size:15px; color:#152030; font-weight:600; margin-bottom:24px; letter-spacing:0.02em; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,160px); gap:16px; }
+.card {
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  overflow:hidden;
+  cursor:pointer;
+  text-decoration:none;
+  display:block;
+  transition:box-shadow 0.15s;
+}
+.card:hover { box-shadow:0 4px 16px rgba(30,62,152,0.1); }
+.card iframe {
+  width:160px; height:140px;
+  border:none;
+  pointer-events:none;
+  display:block;
+}
+.card span {
+  display:block;
+  font-size:11px;
+  color:#607080;
+  padding:8px 10px;
+  border-top:1px solid #f0f4f8;
+}
+.back { display:inline-block; margin-bottom:28px; font-size:12px; color:#3a5888; text-decoration:none; opacity:0.7; }
+.back:hover { opacity:1; }
+</style>
+</head>
+<body>
+<a class="back" href="index.html">← back</a>
+<h1>GR Signaling Component Icons</h1>
+<div class="grid">
+  <a class="card" href="assets/legend/gr.html" target="_blank"><iframe src="assets/legend/gr.html"></iframe><span>Glucocorticoid Receptor</span></a>
+  <a class="card" href="assets/legend/hsp90.html" target="_blank"><iframe src="assets/legend/hsp90.html"></iframe><span>HSP90</span></a>
+  <a class="card" href="assets/legend/fkbp51.html" target="_blank"><iframe src="assets/legend/fkbp51.html"></iframe><span>FKBP51</span></a>
+  <a class="card" href="assets/legend/fkbp52.html" target="_blank"><iframe src="assets/legend/fkbp52.html"></iframe><span>FKBP52</span></a>
+  <a class="card" href="assets/legend/dynein.html" target="_blank"><iframe src="assets/legend/dynein.html"></iframe><span>Dynein/Dynactin</span></a>
+  <a class="card" href="assets/legend/importin.html" target="_blank"><iframe src="assets/legend/importin.html"></iframe><span>Importin α/β</span></a>
+  <a class="card" href="assets/legend/prednisolone.html" target="_blank"><iframe src="assets/legend/prednisolone.html"></iframe><span>Prednisolone</span></a>
+  <a class="card" href="assets/legend/microtubule.html" target="_blank"><iframe src="assets/legend/microtubule.html"></iframe><span>α/β-Tubulin</span></a>
+  <a class="card" href="assets/legend/nfkb.html" target="_blank"><iframe src="assets/legend/nfkb.html"></iframe><span>NF-κB</span></a>
+  <a class="card" href="assets/legend/ap1.html" target="_blank"><iframe src="assets/legend/ap1.html"></iframe><span>AP-1</span></a>
+</div>
+</body>
+</html>
