@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GR Signaling Animation | Felix Melanson</title>
-<meta name="description" content="An interactive HTML canvas animation of glucocorticoid receptor (GR) signaling. Developed for PHAR 370 at Queen's University to visualize genomic and non-genomic pathways.">
+<meta name="description" content="An interactive HTML canvas animation of glucocorticoid receptor (GR) signaling. Built for PHAR 370 at Queen's University to visualize genomic and non-genomic Mechanism of Action.">
 <link rel="canonical" href="https://felixmelanson.github.io/gr-signaling-animation/">
 <meta property="og:title" content="GR Signaling Animation">
 <meta property="og:type" content="website">
@@ -31,7 +31,7 @@
         "https://felixmelanson.github.io/gr-signaling-animation/assets/screenshots/ss1.jpg",
         "https://felixmelanson.github.io/gr-signaling-animation/assets/screenshots/ss2.jpg"
       ],
-      "description": "Interactive model of glucocorticoid receptor signaling pathways—genomic and non-genomic—built for Queen's University pharmacology (PHAR 370).",
+      "description": "Interactive model of glucocorticoid receptor signaling pathways—genomic and non-genomic; built for QU pharmacology presentation(PHAR 370).",
       "author": { "@id": "https://github.com/felixmelanson#person" },
       "learningResourceType": "Interactive animation"
     },
@@ -88,20 +88,24 @@ canvas { display:block; }
   text-decoration:underline;
 }
 #intro-screens {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-top:12px;
+  position:absolute;
+  left:-10000px;
+  top:0;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  opacity:0;
+  pointer-events:none;
 }
 #intro-screens img {
-  width:100%;
-  max-width:100%;
-  max-height:min(16vh, 140px);
+  width:auto;
   height:auto;
+  max-width:none;
+  max-height:none;
   vertical-align:middle;
-  border-radius:8px;
-  border:1px solid rgba(30,62,152,0.14);
-  box-shadow:0 2px 10px rgba(20,30,80,0.08);
+  border-radius:0;
+  border:none;
+  box-shadow:none;
 }
 
 #ref-list {
@@ -278,8 +282,8 @@ canvas { display:block; }
     <a href="https://github.com/felixmelanson" target="_blank" rel="noopener noreferrer author">Felix Melanson on GitHub</a>
   </p>
   <figure id="intro-screens">
-    <img src="assets/screenshots/ss1.jpg" width="2006" height="1154" alt="Glucocorticoid receptor signaling animation: HTML canvas view of cytoplasmic GR pathway and prednisolone binding" loading="lazy" decoding="async">
-    <img src="assets/screenshots/ss2.jpg" width="1682" height="1617" alt="GR signaling animation icons: genomic pathway, GRE, NF-κB, and custom HTML legend icons by Felix Melanson" loading="lazy" decoding="async">
+    <img src="assets/screenshots/ss1.jpg" width="2006" height="1154" alt="Glucocorticoid receptor signaling animation: HTML canvas view of cytoplasmic GR pathway and prednisolone binding" decoding="async">
+    <img src="assets/screenshots/ss2.jpg" width="1682" height="1617" alt="GR signaling animation icons: genomic pathway, GRE, NF-κB, and custom HTML legend icons by Felix Melanson" decoding="async">
   </figure>
 </div>
 <canvas id="c" width="1280" height="720"></canvas>
