@@ -1,13 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="google-site-verification" content="WMLy3DfKoolvWDuSVBHX5RWtSGN-cEeteJkzpPnSVE8" />
 <meta charset="UTF-8">
-<title>GR Signaling Animation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GR Signaling Animation | Felix Melanson</title>
+<meta name="description" content="An interactive HTML canvas animation of glucocorticoid receptor (GR) signaling. Developed for PHAR 370 at Queen's University to visualize genomic and non-genomic pathways.">
+<link rel="canonical" href="https://felixmelanson.github.io/gr-signaling-animation/">
+<meta property="og:title" content="GR Signaling Animation">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://felixmelanson.github.io/gr-signaling-animation/">
+<meta property="og:image" content="https://felixmelanson.github.io/gr-signaling-animation/assets/screenshots/ss1.jpg">
+<meta property="og:image:width" content="2006">
+<meta property="og:image:height" content="1154">
+<meta property="og:description" content="Visualizing cytoplasmic activation and genomic signaling of the glucocorticoid receptor.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GR Signaling Animation">
+<meta name="twitter:description" content="Visualizing cytoplasmic activation and genomic signaling of the glucocorticoid receptor.">
+<meta name="twitter:image" content="https://felixmelanson.github.io/gr-signaling-animation/assets/screenshots/ss1.jpg">
+<meta name="google-site-verification" content="WMLy3DfKoolvWDuSVBHX5RWtSGN-cEeteJkzpPnSVE8" />
+<link rel="author" href="https://github.com/felixmelanson">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LearningResource",
+      "name": "GR Signaling Animation",
+      "url": "https://felixmelanson.github.io/gr-signaling-animation/",
+      "image": [
+        "https://felixmelanson.github.io/gr-signaling-animation/assets/screenshots/ss1.jpg",
+        "https://felixmelanson.github.io/gr-signaling-animation/assets/screenshots/ss2.jpg"
+      ],
+      "description": "Interactive model of glucocorticoid receptor signaling pathways—genomic and non-genomic—built for Queen's University pharmacology (PHAR 370).",
+      "author": { "@id": "https://github.com/felixmelanson#person" },
+      "learningResourceType": "Interactive animation"
+    },
+    {
+      "@id": "https://github.com/felixmelanson#person",
+      "@type": "Person",
+      "name": "Felix Melanson",
+      "url": "https://github.com/felixmelanson",
+      "sameAs": "https://github.com/felixmelanson"
+    },
+    {
+      "@id": "https://github.com/felixmelanson/gr-signaling-animation#repo",
+      "@type": "SoftwareSourceCode",
+      "name": "gr-signaling-animation",
+      "url": "https://github.com/felixmelanson/gr-signaling-animation",
+      "codeRepository": "https://github.com/felixmelanson/gr-signaling-animation",
+      "author": { "@id": "https://github.com/felixmelanson#person" },
+      "programmingLanguage": "HTML"
+    }
+  ]
+}
+</script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#fff; width:100vw; height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; }
+#main { position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
 canvas { display:block; }
+#page-intro {
+  position:absolute;
+  left:16px;
+  top:56px;
+  max-width:min(360px, 48vw);
+  z-index:8;
+}
+#page-intro h1 {
+  font:600 15px/1.25 system-ui, sans-serif;
+  color:#152030;
+  margin-bottom:8px;
+  letter-spacing:0.01em;
+}
+#page-intro p {
+  font:12px/1.55 system-ui, sans-serif;
+  color:#3a5060;
+}
+#intro-links {
+  margin-top:10px;
+  font:12px/1.45 system-ui, sans-serif;
+}
+#intro-links a {
+  color:#1a5bcc;
+  text-decoration:none;
+}
+#intro-links a:hover {
+  text-decoration:underline;
+}
+#intro-screens {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:12px;
+}
+#intro-screens img {
+  width:100%;
+  max-width:100%;
+  max-height:min(16vh, 140px);
+  height:auto;
+  vertical-align:middle;
+  border-radius:8px;
+  border:1px solid rgba(30,62,152,0.14);
+  box-shadow:0 2px 10px rgba(20,30,80,0.08);
+}
 
 #ref-list {
   padding-left:18px;
@@ -60,6 +155,14 @@ canvas { display:block; }
   letter-spacing:0.02em;
   white-space:nowrap;
   z-index:10;
+}
+#byline a {
+  color:inherit;
+  text-decoration:none;
+}
+#byline a:hover {
+  text-decoration:underline;
+  opacity:1;
 }
 
 #overlay {
@@ -165,7 +268,22 @@ canvas { display:block; }
 </style>
 </head>
 <body>
+<main id="main">
+<div id="page-intro">
+  <h1>GR Signaling Animation</h1>
+  <p>Interactive HTML canvas animation of glucocorticoid receptor (GR) signaling for PHAR 370 at Queen&rsquo;s University—visualizing genomic and non-genomic pathways.</p>
+  <p id="intro-links">
+    <a href="https://github.com/felixmelanson/gr-signaling-animation" target="_blank" rel="noopener noreferrer">Source: felixmelanson/gr-signaling-animation</a>
+    <span aria-hidden="true"> · </span>
+    <a href="https://github.com/felixmelanson" target="_blank" rel="noopener noreferrer author">Felix Melanson on GitHub</a>
+  </p>
+  <figure id="intro-screens">
+    <img src="assets/screenshots/ss1.jpg" width="2006" height="1154" alt="Glucocorticoid receptor signaling animation: HTML canvas view of cytoplasmic GR pathway and prednisolone binding" loading="lazy" decoding="async">
+    <img src="assets/screenshots/ss2.jpg" width="1682" height="1617" alt="GR signaling animation icons: genomic pathway, GRE, NF-κB, and custom HTML legend icons by Felix Melanson" loading="lazy" decoding="async">
+  </figure>
+</div>
 <canvas id="c" width="1280" height="720"></canvas>
+</main>
 
 <nav id="tabs">
   <button onclick="openPanel('about')">About</button>
@@ -174,11 +292,11 @@ canvas { display:block; }
   <button onclick="openPanel('refs')">References</button>
 </nav>
 
-<div id="byline">Animation by Felix Melanson</div>
+<div id="byline">Animation by <a href="https://github.com/felixmelanson" target="_blank" rel="noopener noreferrer author">Felix Melanson</a></div>
 
 <div id="overlay" onclick="closePanel()">
   <div id="panel" onclick="event.stopPropagation()">
-    <button id="close-btn" onclick="closePanel()">&#x2715;</button>
+    <button type="button" id="close-btn" onclick="closePanel()" aria-label="Close">&#x2715;</button>
 
     <div id="pane-about" class="pane">
       <h2>GR Signaling Animation</h2>
@@ -186,7 +304,7 @@ canvas { display:block; }
       <p>Cytoplasmic activation: resting chaperone complex → prednisolone binding → FKBP51/52 switch → dynein-dynactin recruitment → retrograde microtubule transport → nuclear pore entry → HSP90 dissociation</p>
       <p>Genomic signaling: homodimerization → transactivation (GRE binding, DUSP1 induction) → transrepression (NF-κB/AP-1 tethering)</p>
       <p>Additional Note (GRdim hypothesis): An experiment using a KO mouse model engineered to abolish GR dimerization; the goal was to test whether transrepression could be isolated from transactivation, retaining anti-inflammatory efficacy while eliminating metabolic side effects. The experiment failed: without dimerization, DUSP1 induction is lost and the anti-inflammatory effect collapses entirely, demonstrating that the two pathways are functionally inseparable. This has direct clinical implications because transactivation cannot be eliminated without losing therapeutic efficacy, glucocorticoid-driven gene expression in metabolic tissues is unavoidable. Adverse effects therefore concentrate in tissues with the highest GR expression: liver, skeletal muscle, adipose tissue, and pancreas.</p>
-      <p style="margin-top:16px"><a href="https://github.com/felixmelanson" target="_blank">github.com/felixmelanson &rarr;</a></p>
+      <p style="margin-top:16px"><a href="https://github.com/felixmelanson/gr-signaling-animation" target="_blank" rel="noopener noreferrer">Source repository &rarr;</a> · <a href="https://github.com/felixmelanson" target="_blank" rel="noopener noreferrer author">Felix Melanson on GitHub &rarr;</a></p>
     </div>
 
     <div id="pane-icons" class="pane">

@@ -9,4 +9,6 @@ Canvas animation of glucocorticoid receptor (GR) signaling made for pharmacology
 
 References and information in tabs on **https://felixmelanson.github.io/gr-signaling-animation/**
 
-<img src="assets/screenshots/ss1.jpg" width="60%"/> <img src="assets/screenshots/ss2.jpg" width="36%"/>
+**Repository:** [felixmelanson/gr-signaling-animation](https://github.com/felixmelanson/gr-signaling-animation) · **Author:** [Felix Melanson](https://github.com/felixmelanson)
+
+<img src="assets/screenshots/ss1.jpg" alt="Glucocorticoid receptor signaling animation canvas view" width="60%"/> <img src="assets/screenshots/ss2.jpg" alt="GR signaling animation genomic pathway and HTML icons" width="36%"/>
