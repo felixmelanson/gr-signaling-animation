@@ -61,10 +61,13 @@ body { background:#fff; width:100vw; height:100vh; overflow:hidden; display:flex
 canvas { display:block; }
 #page-intro {
   position:absolute;
-  left:16px;
-  top:56px;
-  max-width:min(360px, 48vw);
-  z-index:8;
+  left:-10000px;
+  top:0;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  opacity:0;
+  pointer-events:none;
 }
 #page-intro h1 {
   font:600 15px/1.25 system-ui, sans-serif;
@@ -275,7 +278,7 @@ canvas { display:block; }
 <main id="main">
 <div id="page-intro">
   <h1>GR Signaling Animation</h1>
-  <p>Interactive HTML canvas animation of glucocorticoid receptor (GR) signaling for PHAR 370 at Queen&rsquo;s University—visualizing genomic and non-genomic pathways.</p>
+  <p>Interactive HTML canvas animation of glucocorticoid receptor (GR) signaling for PHAR 370 at Queen&rsquo;s University; visualizing genomic and non-genomic pathways.</p>
   <p id="intro-links">
     <a href="https://github.com/felixmelanson/gr-signaling-animation" target="_blank" rel="noopener noreferrer">Source: felixmelanson/gr-signaling-animation</a>
     <span aria-hidden="true"> · </span>
